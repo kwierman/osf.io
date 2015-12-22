@@ -6,18 +6,59 @@ from website.routes import OsfWebRenderer
 TEMPLATE_DIR = '../addons/dryad/templates/'
 
 
-page_routes = {'rules':
+api_routes = {'rules':
     [
         Rule(
             [
-                '/project/<pid>/dryad/browser',
-                '/project/<pid>/node/<nid>/dryad/browser',
+                '/project/<pid>/dryad/validate',
+                '/project/<pid>/node/<nid>/dryad/validate',
             ],
             'get',
-            views.dryad_browser,
-            OsfWebRenderer('../addons/dryad/templates/dryad_page.mako'),
-
+            views.validate_dryad_doi,
+            json_renderer,
         ),
+        Rule(
+            [
+                '/project/<pid>/dryad/set',
+                '/project/<pid>/node/<nid>/dryad/set',
+            ],
+            'post',
+            views.set_dryad_doi,
+            json_renderer,
+        ),
+        Rule(
+            [
+                '/project/<pid>/dryad/unset',
+                '/project/<pid>/node/<nid>/dryad/unset',
+            ],
+            'get',
+            views.unset_dryad_doi,
+            json_renderer,
+        ),
+        Rule(
+            [
+                '/project/<pid>/dryad/browse',
+                '/project/<pid>/node/<nid>/dryad/browse',
+            ],
+            'get',
+            views.list_dryad_objects,
+            json_renderer,
+        ),
+        Rule(
+            [
+                '/project/<pid>/dryad/search',
+                '/project/<pid>/node/<nid>/dryad/search',
+            ],
+            'get',
+            views.search_dryad_objects,
+            json_renderer,
+        ),
+    ],  
+    'prefix': '/api/v1'
+}
+
+page_routes = {'rules':
+    [
         Rule(
             [
                 '/project/<pid>/dryad/',
@@ -27,42 +68,14 @@ page_routes = {'rules':
             views.dryad_page,
             OsfWebRenderer('../addons/dryad/templates/dryad_page.mako'),
         ),
-        Rule(
-            [
-                '/project/<pid>/dryad/search',
-                '/project/<pid>/node/<nid>/dryad/search',
-            ],
-            'get',
-            views.search_dryad_page,
-            OsfWebRenderer('../addons/dryad/templates/dryad_page.mako'),
-        ),
-        Rule(
-            [
-                '/project/<pid>/dryad/check',
-                '/project/<pid>/node/<nid>/dryad/check',
-            ],
-            'get',
-            views.check_dryad_doi,
-            OsfWebRenderer('../addons/dryad/templates/dryad_check_doi.mako'),
-        ),
-        Rule(
-            [
-                '/project/<pid>/dryad/add',
-                '/project/<pid>/node/<nid>/dryad/add',
-            ],
-            'get',
-            views.set_dryad_doi,
-            OsfWebRenderer('../addons/dryad/templates/dryad_page.mako'),
-        ),
-        Rule(
-            [
-                '/project/<pid>/dryad/rm',
-                '/project/<pid>/node/<nid>/dryad/rm',
-            ],
-            'get',
-            views.remove_dryad_doi,
-            json_renderer,
-        ),
+    ],
+    'prefix': '/api/v1'
+}
+
+hgrid_routes = {'rules':
+    [
+
+
         Rule(
             [
                 '/project/<pid>/dryad/hgrid/root/',
@@ -72,5 +85,6 @@ page_routes = {'rules':
             views.dryad_addon_folder,
             json_renderer,
         ),
-    ]
+    ],
+    'prefix': '/api/v1'
 }

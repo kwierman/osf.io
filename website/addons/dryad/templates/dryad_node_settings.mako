@@ -3,12 +3,12 @@
     <h4 class="addon-title">
       <img class="addon-icon" src="${addon_icon_url}"></img>
         ${addon_full_name}
-		<small  class=" pull-right">
-				Set DOI:
-				<input id="dryaddoitext" type="text" name="doi" value="${dryad_package_doi}">
-				<a id="dryadsubmitkey">Submit</a><br/>
-			OR: <a href="${browse_dryad_url}">Browse/Search Dryad for your package</a>
-		</small>
+    		<small  class=" pull-right">
+    				Set DOI:
+    				<input id="dryaddoitext" type="text" name="doi" value="${dryad_package_doi}">
+    				<a id="dryadsubmitkey">Submit</a><br/>
+    			OR: <a href="${browse_dryad_url}">Browse/Search Dryad for your package</a>
+    		</small>
 
     </h4>
 </div>

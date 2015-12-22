@@ -8,15 +8,11 @@ from website.addons.base import AddonUserSettingsBase, AddonNodeSettingsBase
 from website.addons.base import StorageAddonBase
 
 from website.addons.dryad import settings as dryad_settings
-#from website.addons.dryad import serializer as serializer
 
-from pyDryad import Dryad
+from website.util import api_url_for
 
 
 class AddonDryadUserSettings(AddonUserSettingsBase):
-
-    def delete(self, **kwargs):
-        super(AddonDryadUserSettings, self).delete()
 
     @property
     def has_auth(self):
@@ -83,14 +79,12 @@ class AddonDryadNodeSettings(StorageAddonBase, AddonNodeSettingsBase):
         self.user_settings = None
 
     def set_doi(self, doi, title, auth):
-        #Verify the doi
-        try:
-            d = Dryad()
-            d.get_package(doi)
-        except HTTPError:
-            return
+        if check_dryad_doi(doi):
+            self.dryad_package_doi = doi
+            return True
+        return False
 
-        self.dryad_package_doi = doi
+
         self.owner.add_log(
             action='dryad_doi_set',
             params={
@@ -101,21 +95,20 @@ class AddonDryadNodeSettings(StorageAddonBase, AddonNodeSettingsBase):
             auth=auth
         )
 
+    def add_url_to_json(self, js, view_name):
+        js.update({view_name: self.owner.api_url_for(view_name)})
+
     def to_json(self, user):
         ret = super(AddonDryadNodeSettings, self).to_json(user)
-        ret.update({'dryad_package_doi': self.dryad_package_doi if self.dryad_package_doi else '',
-            'add_dryad_package_url': self.owner.web_url_for('set_dryad_doi'),
-            'browse_dryad_url': self.owner.web_url_for('dryad_browser'),
-            'search_dryad_url': self.owner.web_url_for('search_dryad_page'),
-            'check_dryad_url': self.owner.web_url_for('check_dryad_doi'), })
-        return ret
 
-    def update_json(self):
-        ret = {
-            'dryad_package_doi': self.dryad_package_doi if self.dryad_package_doi else '',
-            'add_dryad_package_url': self.owner.web_url_for('set_dryad_doi'),
-            'browse_dryad_url': self.owner.web_url_for('dryad_browser'),
-            'search_dryad_url': self.owner.web_url_for('search_dryad_page'),
-            'check_dryad_url': self.owner.web_url_for('check_dryad_doi'),
-        }
+        api_endpoints = ['dryad_validate_doi_url',
+                'dryad_set_doi_url',
+                'dryad_unset_doi_url',
+                'dryad_list_objects',
+                'dryad_search_objects']
+
+        ret.update({'dryad_package_doi': self.dryad_package_doi if self.dryad_package_doi else ''})
+        for endpoint in api_endpoints:
+            self.add_url_to_json(ret, endpoint)
+
         return ret
