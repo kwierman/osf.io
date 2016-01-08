@@ -1,46 +1,19 @@
 <%inherit file="project/project_base.mako"/>
-
 <h1>Dryad Browser</h1>
-<p>Viewing ${start} through ${end} of ${total}<p>
 
-<small class=" pull-right">
-	% if not start == 0:
-	<a href="${previous_dryad}">Previous</a>
-	% else:
-	<span>Previous</span>
-	% endif
-	|
-	% if not end ==total:
-	<a href="${next_dryad}">Next</a>
-	% else:
-	<span>Next</span>
-	% endif
-</small>
-<small class="pull-left">
-	<form action="${search_dryad_url}">
-		Search:
-		<input type="text" name="query" value="Enter Text Here">
-		<input type="submit" value="Search">
-	</form>
-</small>
-<br/>
-<hr/>
-<small>
-	${content}
-</small>
-<br/>
-<hr/>
-<small class=" pull-right">
-	% if not start == 0:
-	<a href="${previous_dryad}">Previous</a>
-	% else:
-	<span>Previous</span>
-	% endif
-	|
-	% if not end ==total:
-	<a href="${next_dryad}">Next</a>
-	% else:
-	<span>Next</span>
-	% endif
-</small>
+<div class="col-sm-4">
+    <%include file="dryad/templates/dryad_status.mako"/>
+</div><!-- end col-sm-4 -->
 
+<div  class="col-sm-8">
+    <%include file="dryad/templates/dryad_browser.mako"/>
+</div><!-- end col-sm-8 -->
+
+<!-- The rest of this page is saved for the eventual v2 integration -->
+
+<%def name="javascript_bottom()">
+    <% import json %>
+    ${parent.javascript_bottom()}
+    <script src=${"/static/public/js/dryad-browser-page.js" | webpack_asset}>
+    </script>
+</%def>

@@ -1,7 +1,7 @@
 <script type="text/html" id="dryad_doi_set">
-added <span data-bind="text: params.dryad.title"></span>
+added <em><span data-bind="text: params.dryad.title"></span></em>
 with Dryad DOI
-<span data-bind="text: params.dryad.doi"></span>
+<strong data-bind="text: params.dryad.doi"></strong>
 to
 <a class="log-node-title-link overflow" data-bind="attr: {href: nodeUrl}, text: nodeTitle"></a>
 </script>

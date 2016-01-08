@@ -15,7 +15,7 @@ DRYAD_DATAONE_DOWNLOAD = "https://datadryad.org/mn/object/{}/bitstream"
 DRYAD_FILE_METADATA = "http://www.datadryad.org/mn/meta/{}/bitstream"
 
 #SOLR Search Query
-DRYAD_SOLR_SEARCH = "http://datadryad.org/solr/search/select/?q={}&archived={}&formatId=http://www.openarchives.org/ore/terms&start={}&count={"}
+DRYAD_SOLR_SEARCH = "http://datadryad.org/solr/search/select/?q={}&archived={}&formatId=http://www.openarchives.org/ore/terms&start={}&count={}&fq=location.coll:2"
 
 #Dryad Web API
 DRYAD_WEB_API="http://datadryad.org/resource/{}"

@@ -1,27 +1,23 @@
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
-from .website.addons.dryad.settings.defaults import *
-from .website.addons.base.exceptions import AddonError
-from urllib2 import HTTPError
+from website.addons.dryad.settings import *
+import urllib
+import urllib2
 import cgi
 
-def get_dryad_metadata(doi=):
+def get_dryad_metadata(doi="doi:10.5061/dryad.1850"):
     """ Retrieves the metadata of a dryad item in the form of xml.dom.minidom element
     :param doi: Dryad DOI in the form of "doi:10.5061/dryad.XXXX"
     :type doi: string
     :returns:  xml.dom.minidom.Document -- xml form of the dryad metadata
     :raises: urllib.error.HTTPError
     """
-    try:
-        url =DRYAD_DATAONE_METADATA.format(doi)
-        req = urllib2.Request(url)
-        response = urllib2.urlopen(req)
-        html = response.read()
-        return xml.dom.minidom.parseString(html)
-    except HTTPError:
-        raise AddonError("Error fetching Dryad DOI from server. DOI: {}".format(doi))
-
+    url = DRYAD_DATAONE_METADATA.format(doi)
+    req = urllib2.Request(url)
+    response = urllib2.urlopen(req)
+    html = response.read()
+    return xml.dom.minidom.parseString(html)
 
 def get_dryad_title(doi="doi:10.5061/dryad.1850"):
     metadata = get_dryad_metadata(doi)
@@ -29,7 +25,7 @@ def get_dryad_title(doi="doi:10.5061/dryad.1850"):
 
 def check_dryad_doi(doi="doi:10.5061/dryad.1850"):
     """ Checks dryad dois for validity.
-    Attempts to download data from 
+    Attempts to download data from
     :param doi: Dryad DOI in the form of "doi:10.5061/dryad.XXXX"
     :type doi: string
     :returns:  bool -- True if the doi is found in the dryad archive.
@@ -37,7 +33,7 @@ def check_dryad_doi(doi="doi:10.5061/dryad.1850"):
     """
     try:
         get_dryad_metadata(doi)
-    except HTTPError as e:
+    except urllib2.HTTPError as e:
         if e.code == 404:
             return False
         else:
@@ -53,7 +49,7 @@ def list_dryad_dois(start_n=0, count=20):
     :returns:  xml.dom.minidom.Document -- document of packages listed
     :raises: urllib.error.HTTPError
     """
-    url =DRYAD_DATAONE_LIST.format(start_n, count,u'http://www.openarchives.org/ore/terms')
+    url = DRYAD_DATAONE_LIST.format(start_n, count)+u'&formatId=http://www.openarchives.org/ore/terms'
     req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     html = response.read()
@@ -66,7 +62,7 @@ def file_metadata(doi='doi:10.5061/dryad.1850/1'):
     :returns:  xml.dom.minidom.Document -- document of packages listed
     :raises: urllib.error.HTTPError
     """
-    url=DRYAD_FILE_METADATA.format(doi)
+    url = DRYAD_FILE_METADATA.format(doi)
     req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     html = response.read()
@@ -79,7 +75,7 @@ def download_dryad_file(doi="doi:10.5061/dryad.1850/1"):
     :returns:  string -- file buffer
     :raises: urllib.error.HTTPError
     """
-    url =DRYAD_DATAONE_DOWNLOAD.format(doi)
+    url = DRYAD_DATAONE_DOWNLOAD.format(doi)
     req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     html = response.read()
@@ -91,14 +87,52 @@ def get_file_name(doi='doi:10.5061/dryad.1850/1'):
     :type start_n: string
     :returns:  string -- file buffer
     :raises: urllib.error.HTTPError
-    """   
-    url =DRYAD_DATAONE_DOWNLOAD.format(doi)
+    """
+    url = DRYAD_DATAONE_DOWNLOAD.format(doi)
     req = urllib2.Request(url)
-    response = urllib2.urlopen(req) 
+    response = urllib2.urlopen(req)
     _, params = cgi.parse_header(response.headers.get('Content-Disposition', ''))
     return params['filename']
 
-def get_file_list_as_json(start_n=0, count=20):
+def get_dryad_metadata_as_json(doi="doi:10.5061/dryad.1850"):
+    metadata_xml = get_dryad_metadata(doi)
+
+    #required by metadata standard
+    ident = metadata_xml.getElementsByTagName("dcterms:identifier")[0].firstChild.wholeText
+    title = metadata_xml.getElementsByTagName("dcterms:title")[0].firstChild.wholeText
+    authors = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dcterms:creator")]
+
+    #optional by metadata standard
+    description = ""
+    if len(metadata_xml.getElementsByTagName("dcterms:description"))>0:
+        description = metadata_xml.getElementsByTagName("dcterms:description")[0].firstChild.wholeText
+    date_submitted=""
+    if len(metadata_xml.getElementsByTagName("dcterms:dateSubmitted"))>0:
+        date_submitted = metadata_xml.getElementsByTagName("dcterms:dateSubmitted")[0].firstChild.wholeText
+    date_available = ""
+    if len(metadata_xml.getElementsByTagName("dcterms:available"))>0:
+        date_available = metadata_xml.getElementsByTagName("dcterms:available")[0].firstChild.wholeText
+
+    #Also optional, but treated as empty list
+    subject = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dcterms:subject")]
+    scientific_names = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dwc:scientificName")]
+    temporal_info = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dcterms:temporal")]
+    references = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dcterms:references")]
+    files = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dcterms:hasPart")]
+    return {'doi': doi,
+            'ident': ident,
+            'title': title,
+            'authors': authors,
+            'date_submitted': date_submitted,
+            'date_available': date_available,
+            'description': description,
+            'subjects': subject,
+            'scientific_names': scientific_names,
+            'temporal_info': temporal_info,
+            'references': references,
+            'files': files}
+
+def get_package_list_as_json(start_n=0, count=20):
     """ Returns  a list of dryad packages formatted for knockout rendering
     :param start_n: The first index of a package to be listed
     :type start_n: int
@@ -106,7 +140,7 @@ def get_file_list_as_json(start_n=0, count=20):
     :type start_n: int
     :returns:  dict -- Formatted list of dryad packages
     :raises: urllib.error.HTTPError
-    """   
+    """
     xml_list = list_dryad_dois(start_n, count)
 
     count = int(xml_list.getElementsByTagName("d1:objectList")[0].attributes["count"].value)
@@ -119,16 +153,9 @@ def get_file_list_as_json(start_n=0, count=20):
             "package_list": []}
 
     for package in xml_list.getElementsByTagName("objectInfo"):
-        ident = pacakge.getElementsByTagName("identifier")[0].firstChild.wholeText
+        ident = package.getElementsByTagName("identifier")[0].firstChild.wholeText
         doi = "doi:" + ident.split("dx.doi.org/")[1].split("?")[0]
-
-        metadata_xml=get_dryad_metadata(doi)
-        title = metadata_xml.getElementsByTagName("dcterms:title")[0].firstChild.wholeText
-        authors = [i.firstChild.wholeText for i in metadata_xml.getElementsByTagName("dcterms:creator")]
-        ret['package_list'].append({'doi': doi,
-                                    'ident': ident,
-                                    'title': title,
-                                    'authors': authors})
+        ret['package_list'].append(get_dryad_metadata_as_json(doi))
     return ret
 
 def get_dryad_search_results(start_n=0, count=0, query=''):
@@ -136,9 +163,9 @@ def get_dryad_search_results(start_n=0, count=0, query=''):
     Dryad content can be searched using a SOLR interface.
     Basic query: http://datadryad.org/solr/search/select/?q=Galliard
     Field-specific query: http://datadryad.org/solr/search/select/?q=dwc.ScientificName:drosophila
-    Search all text for a string, but limits results to two specified fields: 
+    Search all text for a string, but limits results to two specified fields:
     http://datadryad.org/solr/search/select/?q=Galliard&fl=dc.title,dc.contributor.author
-    Dryad data based on an article DOI: 
+    Dryad data based on an article DOI:
     http://datadryad.org/solr/search/select/?q=dc.relation.isreferencedby:10.1038/nature04863&fl=dc.identifier,dc.title_ac
     All terms in the dc.subject facet, along with their frequencies:
     http://datadryad.org/solr/search/select/?q=location:l2&facet=true&facet.field=dc.subject_filter&facet.minCount=1&facet.limit=5000&fl=nothing
@@ -156,15 +183,15 @@ def get_dryad_search_results(start_n=0, count=0, query=''):
     """
     quote = urllib.quote(query.encode('ascii'), safe='')
     #Change this below when the change to v2 of this addon is updated
-    archived=True
+    archived = True
     url = DRYAD_SOLR_SEARCH.format(quote, archived, start_n, count)
-    req = urllib2.Request(url )
+    req = urllib2.Request(url)
     response = urllib2.urlopen(req)
     html = response.read()
     x = xml.dom.minidom.parseString(html)
     return x
 
-def get_dryad_search_results_json_formatted(start_n=0, count=0, query=''):
+def get_dryad_search_results_json_formatted(start_n=0, count=0, query="Phylogenetic"):
     """ Returns  a list of dryad packages formatted for knockout rendering
     :param start_n: The first index of a package to be listed
     :type start_n: int
@@ -172,35 +199,32 @@ def get_dryad_search_results_json_formatted(start_n=0, count=0, query=''):
     :type start_n: int
     :returns:  dict -- Formatted list of dryad packages
     :raises: urllib.error.HTTPError
-    """   
-    xml_list = get_dryad_search_results(start_n=0, count=0, query='')
+    """
+    xml_list = get_dryad_search_results(start_n, count, query)
+    #now here is the list of results....
 
-    count = int(xml_list.getElementsByTagName("d1:objectList")[0].attributes["count"].value)
-    start = int(xml_list.getElementsByTagName("d1:objectList")[0].attributes["start"].value)
-    total = int(xml_list.getElementsByTagName("d1:objectList")[0].attributes["total"].value)
+    count = int(xml_list.getElementsByTagName("result")[0].attributes["numFound"].value)
+    start = int(xml_list.getElementsByTagName("result")[0].attributes["start"].value)
+    total = int(xml_list.getElementsByTagName("result")[0].attributes["numFound"].value)
 
     ret = {"end": start + count,
             "start": start,
             "total": total,
             "package_list": []}
 
-    for package in xml_list.getElementsByTagName("doc"):
-        title_elements = [i.firstChild.firstChild.wholeText for i in doc.getElementsByTagName("arr") if i.hasAttribute("name") and i.getAttribute("name") == "dc.title_ac"]
-        title = ""
-        if len(title_elements) > 0:
-            title = title_elements[0]
-
-        authors = [i for i in doc.getElementsByTagName("arr") if i.hasAttribute("name") and i.getAttribute("name") == "dc.contributor.author_ac"][0]
-        authors = [i.firstChild.wholeText for i in authors.getElementsByTagName("str")]
+    for doc in xml_list.getElementsByTagName("doc"):
         identifier = [i.firstChild.firstChild.wholeText for i in doc.getElementsByTagName("arr") if i.hasAttribute("name") and i.getAttribute("name") == "dc.identifier"]
-        identifier= identifier[0]
+        if len(identifier)==0:
+            identifier=""
+            continue
+        else:
+            identifier = identifier[0]
+        if 'doi' in identifier:
+            doi = identifier
+            ret['package_list'].append(get_dryad_metadata_as_json(doi))
+        else:
+            ret['package_list'].append({
 
-        href = DRYAD_WEB_API.format(identifier) if "http" not in identifier else identifier
 
-        ret['package_list'].append({'ident': identifier,
-                                    'title': title,
-                                    'authors': authors})
-
-        if "doi" in identifier:
-            ret['package_list'][-1]['doi']=identifier
+            })
     return ret

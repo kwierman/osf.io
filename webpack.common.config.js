@@ -35,6 +35,7 @@ var entry = {
     'registration-edit-page': staticPath('js/pages/registration-edit-page.js'),
     'register-page': staticPath('js/pages/register-page.js'),
     'wiki-edit-page': staticPath('js/pages/wiki-edit-page.js'),
+    'dryad-browser-page': staticPath('js/pages/dryad-browser-page.js'),
     'file-page': staticPath('js/pages/file-page.js'),
     'files-page': staticPath('js/pages/files-page.js'),
     'profile-settings-page': staticPath('js/pages/profile-settings-page.js'),
@@ -129,7 +130,9 @@ var resolve = {
         'tests': staticPath('js/tests'),
         // GASP Items not defined as main in its package.json
         'TweenLite' : nodePath('gsap/src/minified/TweenLite.min.js'),
-        'EasePack' : nodePath('gsap/src/minified/easing/EasePack.min.js')
+        'EasePack' : nodePath('gsap/src/minified/easing/EasePack.min.js'),
+        // For the Dryad Browser Page.
+        'dryadBrowser' : addonsPath('dryad/static/dryadBrowser.js')
     }
 };
 

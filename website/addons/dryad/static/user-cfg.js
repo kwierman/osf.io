@@ -1,7 +1,2 @@
-
-
-var $ = require('jquery');
-var AddonHelper = require('js/addonHelper');
-$(document).ready(function() {
-
-    });
+'use strict';
+// note: This will need to be filled in for the v2 upgrade

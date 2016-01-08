@@ -18,8 +18,15 @@ ADDED_MANDATORY = []
 VIEWS = ['page']
 CONFIGS = ['accounts', 'node']
 CATEGORIES = ['storage']
-INCLUDE_JS = {}
-INCLUDE_CSS = {}
+INCLUDE_JS = {
+    'widget': [],
+    'page': ['dryad-page.js'],
+}
+
+INCLUDE_CSS = {
+    'widget': [],
+    'page': [],
+}
 HAS_HGRID_FILES = True
 GET_HGRID_DATA = views.dryad_addon_folder
 MAX_FILE_SIZE = 1000

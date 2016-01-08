@@ -54,14 +54,7 @@ var _dryadItemButtons = {
                     }, 'Download')
                 );
             }
-            if (item.kind === 'file' && item.data.permissions && item.data.permissions.view && item.data.extra.status === 'public') {
-                buttons.push(
-                    m('a.text-info.fangorn-toolbar-icon', {href: item.data.extra.webView}, [
-                        m('i.fa.fa-external-link'),
-                        m('span', 'View on dryad')
-                    ])
-                );
-            }
+
         }
         return m('span', buttons); // Tell fangorn this function is used.
     }
