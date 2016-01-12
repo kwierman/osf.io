@@ -10,7 +10,7 @@ from website.addons.base import AddonUserSettingsBase, AddonNodeSettingsBase
 from website.addons.base import StorageAddonBase
 
 from website.addons.dryad import settings as dryad_settings
-from website.addons.dryad.utils import check_dryad_doi, get_dryad_title
+from website.addons.dryad import utils as dryad_utils
 
 
 class AddonDryadUserSettings(AddonUserSettingsBase):
@@ -25,6 +25,7 @@ class AddonDryadNodeSettings(StorageAddonBase, AddonNodeSettingsBase):
     complete = True
     has_auth = True
     provider_name = 'dryad'
+    connection = dryad_utils.DryadRepository()
 
     user_settings = fields.ForeignField(
         'addondryadusersettings', backref='authorized'
@@ -42,7 +43,7 @@ class AddonDryadNodeSettings(StorageAddonBase, AddonNodeSettingsBase):
         return {'storage': {}}
 
     def serialize_waterbutler_settings(self):
-        ret = dryad_settings.WATERBUTLER_SETTINGS
+        ret = {}
         ret['doi'] = self.dryad_package_doi
         return ret
 
@@ -61,15 +62,8 @@ class AddonDryadNodeSettings(StorageAddonBase, AddonNodeSettingsBase):
             },
         )
 
-    def deauthorize(self, auth):
-        """Remove user authorization from this node and log the event."""
-        self.user_settings = None
-
-    def get_doi(self):
-        return self.dryad_package_doi
-
     def set_doi(self, doi, title, auth):
-        if check_dryad_doi(doi):
+        if self.connection.check_dryad_doi(doi):
             self.dryad_package_doi = doi
             self.owner.add_log(
                 action='dryad_doi_set',

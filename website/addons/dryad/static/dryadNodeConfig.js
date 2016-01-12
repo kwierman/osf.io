@@ -73,7 +73,6 @@ function ViewModel(url) {
             error: error
         });
     });
-
 }
 
 

@@ -41,7 +41,7 @@ api_routes = {'rules':
                 '/project/<pid>/dryad/unset',
                 '/project/<pid>/node/<nid>/dryad/unset',
             ],
-            'get',
+            'post',
             views.dryad_unset_doi,
             json_renderer,
         ),
